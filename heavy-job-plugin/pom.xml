@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+      <groupId>org.eclipse.hudson.plugins</groupId>
+      <artifactId>hudson-plugin-parent</artifactId>
+      <version>3.3.0</version>
+      <relativePath />
+  </parent>
+  <artifactId>heavy-job</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <packaging>hpi</packaging>
+  <name>Hudson heavy job plugin</name>
+
+  <description>
+      A modified version of the heavy job plugin that allows running on multiple nodes.
+
+      This is based on a pull request found in the jenkins-ci github repository.
+      See https://github.com/aklochkovgd/heavy-job-plugin/tree/configurable_node_constraint
+
+      This version of the plugin is compatible with hudson 3.3.0.
+
+      It provides the list of additional nodes (excluding the one that is executing the job)
+      in an environement variable named "ADDITIONAL_NODES".
+  </description>
+
+  <build>
+      <plugins>
+          <plugin>
+              <groupId>org.eclipse.hudson.tools</groupId>
+              <artifactId>maven-hpi-plugin</artifactId>
+              <extensions>true</extensions>
+              <configuration>
+                  <showDeprecation>true</showDeprecation>
+              </configuration>
+          </plugin>
+      </plugins>
+  </build>
+</project>
