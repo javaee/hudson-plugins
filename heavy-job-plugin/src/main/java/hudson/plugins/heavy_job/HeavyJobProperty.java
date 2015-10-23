@@ -85,10 +85,12 @@ public class HeavyJobProperty extends JobProperty<AbstractProject<?,?>> {
                     b.append(" ");
                 }
             }
-            LOGGER.log(Level.INFO, "{0} additional nodes: {1}", new Object[]{build.getFullDisplayName(), b});
-            List<ParameterValue> params = new ArrayList<>();
-            params.add(new StringParameterValue("ADDITIONAL_NODES", b.toString()));
-            build.addAction(new ParametersAction(params));
+            if(b.length() > 0){
+                LOGGER.log(Level.INFO, "{0} additional nodes: {1}", new Object[]{build.getFullDisplayName(), b});
+                List<ParameterValue> params = new ArrayList<>();
+                params.add(new StringParameterValue("ADDITIONAL_NODES", b.toString()));
+                build.addAction(new ParametersAction(params));
+            }
             return true;
         } catch (IOException | InterruptedException ex) {
             throw new RuntimeException(ex);
