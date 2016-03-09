@@ -29,6 +29,7 @@ import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Job;
 import hudson.model.ParameterValue;
@@ -66,29 +67,47 @@ public class HeavyJobProperty extends JobProperty<AbstractProject<?,?>> {
         this.sameNode = sameNode;
     }
 
+    private static void logInfo(BuildListener listener, String message) {
+        listener.getLogger().println(HeavyJobProperty.class.getSimpleName()+": "+message);
+    }
+
     @Override
     public boolean prebuild(final AbstractBuild<?, ?> build, BuildListener listener) {
+//        if(this.weight <= 1){
+//          return true;
+//        }
         try {
             Executor executor = Executor.currentExecutor();
             WorkUnitContext context = executor.getCurrentWorkUnit().context;
             List<WorkUnit> workUnits = context.getWorkUnits();
-            StringBuilder b = new StringBuilder();
+            StringBuilder additionalNodes = new StringBuilder();
+            Computer _owner = executor.getOwner();
+            if(_owner == null){
+                logInfo(listener, "executor.getOwner() is null");
+                return false;
+            }
+            String ownerHostname = _owner.getHostName();
+            logInfo(listener,"owner hostname is "+ownerHostname);
+            logInfo(listener,"building additional nodes list...");
             for (Iterator<WorkUnit> i = workUnits.iterator(); i.hasNext();) {
                 WorkUnit unit = i.next();
                 String hostname = unit.getExecutor().getOwner().getHostName();
                 // exclude the node assigned to the job
-                if(hostname.equals(executor.getOwner().getHostName())){
-                  continue;
+                if(hostname.equals(ownerHostname)){
+                    logInfo(listener,"excluding "+hostname+" from the additional nodes");
+                    continue;
                 }
-                b.append(unit.getExecutor().getOwner().getHostName());
+                logInfo(listener,"adding "+hostname+" to the additional nodes list");
+                additionalNodes.append(hostname);
                 if (i.hasNext()) {
-                    b.append(" ");
+                    additionalNodes.append(" ");
                 }
             }
-            if(b.length() > 0){
-                LOGGER.log(Level.INFO, "{0} additional nodes: {1}", new Object[]{build.getFullDisplayName(), b});
+            logInfo(listener,"additional nodes list is: "+additionalNodes.toString());
+            if(additionalNodes.length() > 0){
+                LOGGER.log(Level.INFO, "{0} additional nodes: {1}", new Object[]{build.getFullDisplayName(), additionalNodes});
                 List<ParameterValue> params = new ArrayList<>();
-                params.add(new StringParameterValue("ADDITIONAL_NODES", b.toString()));
+                params.add(new StringParameterValue("ADDITIONAL_NODES", additionalNodes.toString()));
                 build.addAction(new ParametersAction(params));
             }
             return true;
