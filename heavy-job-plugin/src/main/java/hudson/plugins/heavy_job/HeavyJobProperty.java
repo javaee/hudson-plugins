@@ -73,9 +73,9 @@ public class HeavyJobProperty extends JobProperty<AbstractProject<?,?>> {
 
     @Override
     public boolean prebuild(final AbstractBuild<?, ?> build, BuildListener listener) {
-//        if(this.weight <= 1){
-//          return true;
-//        }
+        if(this.weight <= 1){
+            return true;
+        }
         try {
             Executor executor = Executor.currentExecutor();
             WorkUnitContext context = executor.getCurrentWorkUnit().context;
@@ -87,18 +87,25 @@ public class HeavyJobProperty extends JobProperty<AbstractProject<?,?>> {
                 return false;
             }
             String ownerHostname = _owner.getHostName();
+            if (ownerHostname == null) {
+                _owner.getName();
+            }
             logInfo(listener,"owner hostname is "+ownerHostname);
             logInfo(listener,"building additional nodes list...");
             for (Iterator<WorkUnit> i = workUnits.iterator(); i.hasNext();) {
                 WorkUnit unit = i.next();
-                String hostname = unit.getExecutor().getOwner().getHostName();
+                Computer unitExecutor = unit.getExecutor().getOwner();
+                String unitHostname = unitExecutor.getHostName();
+                if(unitHostname == null){
+                    unitHostname = unitExecutor.getName();
+                }
                 // exclude the node assigned to the job
-                if(hostname.equals(ownerHostname)){
-                    logInfo(listener,"excluding "+hostname+" from the additional nodes");
+                if(unitHostname.equals(ownerHostname)){
+                    logInfo(listener,"excluding "+unitHostname+" from the additional nodes");
                     continue;
                 }
-                logInfo(listener,"adding "+hostname+" to the additional nodes list");
-                additionalNodes.append(hostname);
+                logInfo(listener,"adding "+unitHostname+" to the additional nodes list");
+                additionalNodes.append(unitHostname);
                 if (i.hasNext()) {
                     additionalNodes.append(" ");
                 }
