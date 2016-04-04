@@ -88,7 +88,8 @@ public class HeavyJobProperty extends JobProperty<AbstractProject<?,?>> {
             }
             String ownerHostname = _owner.getHostName();
             if (ownerHostname == null) {
-                _owner.getName();
+                ownerHostname = _owner.getNode().getNodeName();
+                logInfo(listener,"owner hostname is null, using node name instead: "+ownerHostname);
             }
             logInfo(listener,"owner hostname is "+ownerHostname);
             logInfo(listener,"building additional nodes list...");
@@ -97,7 +98,8 @@ public class HeavyJobProperty extends JobProperty<AbstractProject<?,?>> {
                 Computer unitExecutor = unit.getExecutor().getOwner();
                 String unitHostname = unitExecutor.getHostName();
                 if(unitHostname == null){
-                    unitHostname = unitExecutor.getName();
+                    unitHostname = unitExecutor.getNode().getNodeName();
+                    logInfo(listener,"unit hostname is null, using node name instead: "+unitHostname);
                 }
                 // exclude the node assigned to the job
                 if(unitHostname.equals(ownerHostname)){
